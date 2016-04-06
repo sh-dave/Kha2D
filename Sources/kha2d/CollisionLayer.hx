@@ -8,7 +8,7 @@ class CollisionLayer {
 	private var enemies    : Array<Sprite>;
 	private var projectiles: Array<Sprite>;
 	private var others     : Array<Sprite>;
-	
+
 	public function new(map: Tilemap) {
 		this.map = map;
 		heroes      = new Array<Sprite>();
@@ -16,63 +16,63 @@ class CollisionLayer {
 		projectiles = new Array<Sprite>();
 		others      = new Array<Sprite>();
 	}
-	
+
 	public function getMap(): Tilemap {
 		return map;
 	}
-	
+
 	public function addHero(sprite: Sprite): Void {
 		heroes.push(sprite);
 	}
-	
+
 	public function addEnemy(sprite: Sprite): Void {
 		enemies.push(sprite);
 	}
-	
+
 	public function addProjectile(sprite: Sprite): Void {
 		projectiles.push(sprite);
 	}
-	
+
 	public function addOther(sprite: Sprite): Void {
 		others.push(sprite);
 	}
-	
+
 	public function removeHero(sprite: Sprite): Void {
 		heroes.remove(sprite);
 	}
-	
+
 	public function removeEnemy(sprite: Sprite): Void {
 		enemies.remove(sprite);
 	}
-		
+
 	public function removeProjectile(sprite: Sprite): Void {
 		projectiles.remove(sprite);
 	}
-	
+
 	public function removeOther(sprite: Sprite): Void {
 		others.remove(sprite);
 	}
-	
+
 	public function getHero(index: Int): Sprite {
 		return heroes[index];
 	}
-	
+
 	public function getEnemy(index: Int): Sprite {
 		return enemies[index];
 	}
-	
+
 	public function getProjectile(index: Int): Sprite {
 		return projectiles[index];
 	}
-	
+
 	public function getOther(index: Int): Sprite {
 		return others[index];
 	}
-	
+
 	public function countHeroes(): Int {
 		return heroes.length;
 	}
-	
+
 	public function countEnemies(): Int {
 		return enemies.length;
 	}
@@ -80,11 +80,11 @@ class CollisionLayer {
 	public function countProjectiles(): Int {
 		return projectiles.length;
 	}
-	
+
 	public function countOthers(): Int {
 		return others.length;
 	}
-	
+
 	private function sort(sprites: Array<Sprite>): Void {
 		if (sprites.length == 0) return;
 		sprites.sort(function(arg0: Sprite, arg1: Sprite) {
@@ -93,14 +93,14 @@ class CollisionLayer {
 			else return 1;
 		});
 	}
-	
+
 	private function sortAllSprites(): Void {
 		sort(heroes);
 		sort(enemies);
 		sort(projectiles);
 		sort(others);
 	}
-	
+
 	public function collidesPoint(point: Vector2): Bool {
 		return map.collidesPoint(point);
 	}
@@ -108,7 +108,7 @@ class CollisionLayer {
 	public function collidesSprite(sprite: Sprite): Bool {
 		return map.collides(sprite);
 	}
-	
+
 	//Bresenhahm
 	private function line(xstart: Float, ystart: Float, xend: Float, yend: Float, sprite: Sprite): Void {
 		var x0 = Math.round(xstart);
@@ -137,7 +137,7 @@ class CollisionLayer {
 				err -= dy;
 				x0 += sx;
 				sprite.x = x0;
-				if (map.collides(sprite)) {
+				if (map != null && map.collides(sprite)) {
 					sprite.y -= 1;
 					if (!map.collides(sprite)) {
 						continue;
@@ -179,9 +179,9 @@ class CollisionLayer {
 			}
 			if (e2 < dx) {
 				err += dx;
-				y0 += sy; 
+				y0 += sy;
 				sprite.y = y0;
-				if (map.collides(sprite)) {
+				if (map != null && map.collides(sprite)) {
 					sprite.y -= sy;
 					if (sy < 0) sprite.hitFrom(Direction.DOWN);
 					else sprite.hitFrom(Direction.UP);
@@ -223,7 +223,7 @@ class CollisionLayer {
 			}
 		}
 	}
-	
+
 	private function moveSprite(sprite: Sprite): Void {
 		/*if (sprite.collides && sprite.speedy >= 0 && map.collides(sprite) && !Std.is(sprite, Gas)) {
 			sprite.y = Math.ffloor(sprite.y);
@@ -241,12 +241,12 @@ class CollisionLayer {
 			var ystart = sprite.y;
 			sprite.x = xaim;
 			sprite.y = yaim;
-			if (map.collides(sprite)) {
+			if (map != null && map.collides(sprite)) {
 				line(xstart, ystart, xaim, yaim, sprite);
 			}
 
 			/*sprite.x += sprite.speedx;
-			
+
 			if (colissionMap != null) {
 				if (sprite.speedx > 0) { if (colissionMap.collideright(sprite)) sprite.hitFrom(Direction.LEFT); }
 				else if (sprite.speedx < 0) { if (colissionMap.collideleft(sprite)) sprite.hitFrom(Direction.RIGHT); }
@@ -254,7 +254,7 @@ class CollisionLayer {
 				if (sprite.speedy > 0) { if (colissionMap.collidedown(sprite)) sprite.hitFrom(Direction.UP); }
 				else if (sprite.speedy < 0) { if (colissionMap.collideup(sprite)) sprite.hitFrom(Direction.DOWN); }
 			}*/
-			
+
 			//Bubble Dragons Hack
 			/*if (colissionMap != null) {
 				var rect : Rectangle = sprite.collisionRect();
@@ -270,7 +270,7 @@ class CollisionLayer {
 			sprite.y += sprite.speedy;
 		}
 	}
-	
+
 	private function moveSprites(sprites: Array<Sprite>, xleft: Float, xright: Float): Void {
 		/*var i: Int = 0;
 		while (i < sprites.length) {
@@ -285,18 +285,18 @@ class CollisionLayer {
 		}*/
 		for (sprite in sprites) moveSprite(sprite);
 	}
-	
+
 	private function moveAllSprites(xleft: Float, xright: Float): Void {
 		moveSprites(heroes, xleft, xright);
 		moveSprites(enemies, xleft, xright);
 		moveSprites(projectiles, xleft, xright);
 		moveSprites(others, xleft, xright);
 	}
-	
+
 	public function advance(xleft: Float, xright: Float): Void {
 		sortAllSprites();
 		moveAllSprites(xleft, xright);
-		
+
 		/*var i: Int = 0;
 		while (i < enemies.length) {
 			if (enemies[i].x + enemies[i].width > xleft) break;
@@ -321,7 +321,7 @@ class CollisionLayer {
 			}
 			/* ++i; */
 		}
-		
+
 		/*i = 0;
 		while (i < projectiles.length) {
 			if (projectiles[i].x + projectiles[i].width > xleft) break;
@@ -340,7 +340,7 @@ class CollisionLayer {
 			}
 			/*++i;*/
 		}
-		
+
 		for (other in others) {
 			var rect: Rectangle = other.collisionRect();
 			for (hero in heroes) {
@@ -371,7 +371,7 @@ class CollisionLayer {
 			}
 		}
 	}
-	
+
 	public function cleanSprites(): Void {
 		var found = true;
 		while (found) {
