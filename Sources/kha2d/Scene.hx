@@ -8,48 +8,34 @@ import kha.math.Matrix3;
 import kha.math.Vector2;
 
 class Scene {
-	private static var instance : Scene;
-	
 	var collisionLayer: CollisionLayer;
 	var backgrounds : Array<Tilemap>;
 	var foregrounds : Array<Tilemap>;
 	var backgroundSpeeds : Array<Float>;
 	var foregroundSpeeds : Array<Float>;
-	//var lastUpdatedSprites : Array<Sprite>;
-	//var updatedSprites : Array<Sprite>;
-	
-	var sprites : Array<Sprite>;
-	
+	var sprites : Array<Sprite>;	
 	var backgroundColor : Color;
 	
-	private var width: Int = 640;
-	private var height: Int = 480;
+	var width: Int = 640;
+	var height: Int = 480;
 	
-	public var camx(default, set): Int;
-	public var camy(default, set): Int;
+	public var cameraX(default, set): Int;
+	public var cameraY(default, set): Int;
 	public var screenOffsetX: Int;
 	public var screenOffsetY: Int;
 	
-	private var dirtySprites: Bool = false;
+	var dirtySprites: Bool = false;
 	
-	public static var the(get, null): Scene;
-	
-	private static function get_the(): Scene {
-		if (instance == null) instance = new Scene();
-		return instance;
-	}
-	
-	function new() {
+	public function new( width : Int, height : Int ) {
 		sprites = new Array<Sprite>();
 		backgrounds = new Array<Tilemap>();
 		foregrounds = new Array<Tilemap>();
 		backgroundSpeeds = new Array<Float>();
 		foregroundSpeeds = new Array<Float>();
-		//lastUpdatedSprites = new Array<Sprite>();
-		//updatedSprites = new Array<Sprite>();
 		backgroundColor = Color.fromBytes(0, 0, 0);
-		camx = 0;
-		camy = 0;
+		cameraX = 0;
+		cameraY = 0;
+		setSize(width, height);
 	}
 	
 	public function setSize(width: Int, height: Int): Void {
@@ -115,22 +101,16 @@ class Scene {
 	public function removeHero(sprite: Sprite) {
 		sprite.removed = true;
 		dirtySprites = true;
-		//if (collisionLayer != null) collisionLayer.removeHero(sprite);
-		//sprites.remove(sprite);
 	}
 	
 	public function removeEnemy(sprite: Sprite) {
 		sprite.removed = true;
 		dirtySprites = true;
-		//if (collisionLayer != null) collisionLayer.removeEnemy(sprite);
-		//sprites.remove(sprite);
 	}
 	
 	public function removeProjectile(sprite: Sprite) {
 		sprite.removed = true;
 		dirtySprites = true;
-		//if (collisionLayer != null) collisionLayer.removeProjectile(sprite);
-		//sprites.remove(sprite);
 	}
 	
 	public function removeOther(sprite: Sprite) {
@@ -178,26 +158,24 @@ class Scene {
 		else return collisionLayer.countOthers();
 	}
 	
-	function set_camx(newcamx: Int): Int {
-		camx = newcamx;
+	function set_cameraX(newcamx: Int): Int {
+		cameraX = newcamx;
 		if (collisionLayer != null) {
-			screenOffsetX = Std.int(Math.min(Math.max(0, camx - width / 2), collisionLayer.getMap().getWidth() * collisionLayer.getMap().getTileset().TILE_WIDTH - width));
+			screenOffsetX = Std.int(Math.min(Math.max(0, cameraX - width / 2), collisionLayer.getMap().levelWidth * collisionLayer.getMap().tileset.TILE_WIDTH - width));
 			if (getWidth() < width) screenOffsetX = 0;
 		}
-		else screenOffsetX = camx;
-		return camx;
+		else screenOffsetX = cameraX;
+		return cameraX;
 	}
 	
-	//public var camyHack: Int = 0;
-	
-	function set_camy(newcamy: Int): Int {
-		camy = newcamy;
+	function set_cameraY(newcamy: Int): Int {
+		cameraY = newcamy;
 		if (collisionLayer != null) {
-			screenOffsetY = Std.int(Math.min(Math.max(0, camy - height / 2), collisionLayer.getMap().getHeight() * collisionLayer.getMap().getTileset().TILE_HEIGHT /*+ camyHack*/ - height));
+			screenOffsetY = Std.int(Math.min(Math.max(0, cameraY - height / 2), collisionLayer.getMap().levelHeight * collisionLayer.getMap().tileset.TILE_HEIGHT /*+ camyHack*/ - height));
 			if (getHeight() < height) screenOffsetY = 0;
 		}
-		else screenOffsetY = camy;
-		return camy;
+		else screenOffsetY = cameraY;
+		return cameraY;
 	}
 	
 	function sort(sprites : Array<Sprite>) {
@@ -238,23 +216,12 @@ class Scene {
 			collisionLayer.advance(screenOffsetX, screenOffsetX + width);
 		}
 		cleanSprites();
-		/*var xleft = screenOffsetX;
-		var xright = screenOffsetX + Game.the.width;
-		var i: Int = 0;
-		while (i < sprites.length) {
-			if (sprites[i].x + sprites[i].width > xleft) break;
-			++i;
-		}
-		while (i < sprites.length) {
-			var sprite: Sprite = sprites[i];
-			if (sprite.x > xright) break;
-			sprite.update();
-			++i;
-		}*/
 		for (sprite in sprites) sprite.update();
 		cleanSprites();
 	}
 
+	// TODO (DK) all transform stuff needs to be relative so it can be offset'ed as well
+	// TODO (DK) remove clear()?
 	public function render(g: Graphics) {
 		g.transformation = FastMatrix3.identity();
 		g.color = backgroundColor;
@@ -262,12 +229,10 @@ class Scene {
 		
 		for (i in 0...backgrounds.length) {
 			g.transformation = FastMatrix3.translation(Math.round(-screenOffsetX * backgroundSpeeds[i]), Math.round(-screenOffsetY * backgroundSpeeds[i]));
-			//painter.translate(Math.round(-screenOffsetX * backgroundSpeeds[i]), Math.round(-screenOffsetY * backgroundSpeeds[i]));
 			backgrounds[i].render(g, Std.int(screenOffsetX * backgroundSpeeds[i]), Std.int(screenOffsetY * backgroundSpeeds[i]), width, height);
 		}
 		
 		g.transformation = FastMatrix3.translation(-screenOffsetX, -screenOffsetY);
-		//painter.translate(-screenOffsetX, -screenOffsetY);
 		
 		sort(sprites);
 		
@@ -286,18 +251,17 @@ class Scene {
 		
 		for (i in 0...foregrounds.length) {
 			g.transformation = FastMatrix3.translation(Math.round(-screenOffsetX * foregroundSpeeds[i]), Math.round(-screenOffsetY * foregroundSpeeds[i]));
-			//painter.translate(Math.round(-screenOffsetX * foregroundSpeeds[i]), Math.round(-screenOffsetY * foregroundSpeeds[i]));
 			foregrounds[i].render(g, Std.int(screenOffsetX * foregroundSpeeds[i]), Std.int(screenOffsetY * foregroundSpeeds[i]), width, height);
 		}
 	}
 	
 	public function getWidth() : Float {
-		if (collisionLayer != null) return collisionLayer.getMap().getWidth() * collisionLayer.getMap().getTileset().TILE_WIDTH;
+		if (collisionLayer != null) return collisionLayer.getMap().levelWidth * collisionLayer.getMap().tileset.TILE_WIDTH;
 		else return 0;
 	}
 	
 	public function getHeight() : Float {
-		if (collisionLayer != null) return collisionLayer.getMap().getHeight() * collisionLayer.getMap().getTileset().TILE_HEIGHT;
+		if (collisionLayer != null) return collisionLayer.getMap().levelHeight * collisionLayer.getMap().tileset.TILE_HEIGHT;
 		else return 0;
 	}
 	
