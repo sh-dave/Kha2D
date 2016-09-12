@@ -62,6 +62,13 @@ class Sprite {
 		return tempcollider;
 	}
 	
+	public function setCollider( x : Int, y : Int, width : Int, height : Int) {
+		collider.x = x;
+		collider.y = y;
+		collider.width = width;
+		collider.height = height;
+	}
+
 	public function setAnimation(animation: Animation): Void {
 		this.animation.take(animation);
 	}
