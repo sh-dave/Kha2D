@@ -124,6 +124,7 @@ class CollisionLayer {
 		if (x0 < x1) sx = 1; else sx = -1;
 		if (y0 < y1) sy = 1; else sy = -1;
 		var err = dx - dy;
+		var c : Collision;
 
 		while (true) {
 			//setPixel(x0,y0)
@@ -137,19 +138,19 @@ class CollisionLayer {
 				err -= dy;
 				x0 += sx;
 				sprite.x = x0;
-				if (map.collides(sprite)) {
+				if ((c = map.collidesDetailed(sprite)) != Collision.None)  {
 					sprite.y -= 1;
-					if (!map.collides(sprite)) {
+					if ((c = map.collidesDetailed(sprite)) == Collision.None) {
 						continue;
 					}
 					else {
 						sprite.y -= 1;
-						if (!map.collides(sprite)) {
+						if ((c = map.collidesDetailed(sprite)) == Collision.None) {
 							continue;
 						}
 						else {
 							sprite.y -= 1;
-							if (!map.collides(sprite)) {
+							if ((c = map.collidesDetailed(sprite)) == Collision.None) {
 								continue;
 							}
 							sprite.y += 1;
@@ -158,8 +159,8 @@ class CollisionLayer {
 					}
 					sprite.y += 1;
 					sprite.x -= sx;
-					if (sx < 0) sprite.hitFrom(Direction.RIGHT);
-					else sprite.hitFrom(Direction.LEFT);
+					if (sx < 0) sprite.hitFrom(Direction.RIGHT, c);
+					else sprite.hitFrom(Direction.LEFT, c);
 					while (true) {
 						if (y0 == y1) {
 							sprite.y = yend;
@@ -167,10 +168,10 @@ class CollisionLayer {
 						}
 						y0 += sy;
 						sprite.y = y0;
-						if (map.collides(sprite)) {
+						if ((c = map.collidesDetailed(sprite)) != Collision.None) {
 							sprite.y -= sy;
-							if (sy < 0) sprite.hitFrom(Direction.DOWN);
-							else sprite.hitFrom(Direction.UP);
+							if (sy < 0) sprite.hitFrom(Direction.DOWN, c);
+							else sprite.hitFrom(Direction.UP, c);
 							return;
 						}
 					}
@@ -181,10 +182,10 @@ class CollisionLayer {
 				err += dx;
 				y0 += sy; 
 				sprite.y = y0;
-				if (map.collides(sprite)) {
+				if ((c = map.collidesDetailed(sprite)) != Collision.None) {
 					sprite.y -= sy;
-					if (sy < 0) sprite.hitFrom(Direction.DOWN);
-					else sprite.hitFrom(Direction.UP);
+					if (sy < 0) sprite.hitFrom(Direction.DOWN, c);
+					else sprite.hitFrom(Direction.UP, c);
 					while (true) {
 						if (x0 == x1) {
 							sprite.x = xend;
@@ -192,19 +193,19 @@ class CollisionLayer {
 						}
 						x0 += sx;
 						sprite.x = x0;
-						if (map.collides(sprite)) {
+						if ((c = map.collidesDetailed(sprite)) != Collision.None) {
 							sprite.y -= 1;
-							if (!map.collides(sprite)) {
+							if ((c = map.collidesDetailed(sprite)) == Collision.None) {
 								continue;
 							}
 							else {
 								sprite.y -= 1;
-								if (!map.collides(sprite)) {
+								if ((c = map.collidesDetailed(sprite)) == Collision.None) {
 									continue;
 								}
 								else {
 									sprite.y -= 1;
-									if (!map.collides(sprite)) {
+									if ((c = map.collidesDetailed(sprite)) == Collision.None) {
 										continue;
 									}
 									sprite.y += 1;
@@ -213,8 +214,8 @@ class CollisionLayer {
 							}
 							sprite.y += 1;
 							sprite.x -= sx;
-							if (sx < 0) sprite.hitFrom(Direction.RIGHT);
-							else sprite.hitFrom(Direction.LEFT);
+							if (sx < 0) sprite.hitFrom(Direction.RIGHT, c);
+							else sprite.hitFrom(Direction.LEFT, c);
 							return;
 						}
 					}

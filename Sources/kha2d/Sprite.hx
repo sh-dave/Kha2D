@@ -92,7 +92,7 @@ class Sprite {
 		#end
 	}
 	
-	public function hitFrom(dir: Direction): Void {
+	public function hitFrom(dir: Direction, collision: Collision): Void {
 		
 	}
 	

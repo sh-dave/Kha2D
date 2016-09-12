@@ -72,25 +72,47 @@ class Tilemap {
 		return tileset.tile(map[xtile][ytile]).collides;
 	}
 	
-	public function collides(sprite: Sprite): Bool {
+	var _collisionsCache = [for (i in 0...8) Collision.None];
+
+	public function collidesDetailed(sprite: Sprite): Collision {
 		var rect = sprite.collisionRect();
-		if (rect.x <= 0 || rect.y <= 0 || rect.x + rect.width >= levelWidth * tileset.TILE_WIDTH || rect.y + rect.height >= levelHeight * tileset.TILE_HEIGHT) return true;
+		
+		if (rect.x <= 0) return Collision.WorldBoundsLeft;
+		if (rect.y <= 0) return Collision.WorldBoundsTop;
+		if (rect.x + rect.width >= levelWidth * tileset.TILE_WIDTH) return Collision.WorldBoundsRight;
+		if (rect.y + rect.height >= levelHeight * tileset.TILE_HEIGHT) return Collision.WorldBoundsBottom;		
+		
 		var delta = 0.001;
 		var xtilestart : Int = Std.int((rect.x + delta) / tileset.TILE_WIDTH);
 		var xtileend : Int = Std.int((rect.x + rect.width - delta) / tileset.TILE_WIDTH);
 		var ytilestart : Int = Std.int((rect.y + delta) / tileset.TILE_HEIGHT);
 		var ytileend : Int = Std.int((rect.y + rect.height - delta) / tileset.TILE_HEIGHT);
+		var collisions = 0;
+
 		for (ytile in ytilestart...ytileend + 1) {
 			for (xtile in xtilestart...xtileend + 1) {
 				collisionRectCache.x = rect.x - xtile * tileset.TILE_WIDTH;
 				collisionRectCache.y = rect.y - ytile * tileset.TILE_HEIGHT;
 				collisionRectCache.width = rect.width;
 				collisionRectCache.height = rect.height;
-				if (xtile >= 0 && ytile >= 0 && xtile < map.length && ytile < map[xtile].length && tileset.tile(map[xtile][ytile]) != null)
-					if (tileset.tile(map[xtile][ytile]).collision(collisionRectCache)) return true;
+				
+				if (xtile >= 0 && ytile >= 0 && xtile < map.length && ytile < map[xtile].length && tileset.tile(map[xtile][ytile]) != null) {
+					if (tileset.tile(map[xtile][ytile]).collision(collisionRectCache)) {
+						_collisionsCache[collisions++] = Collision.Tile(xtile, ytile);
+					}
+				}
 			}
 		}
-		return false;
+
+		return collisions > 1
+			? Collision.Multiple(collisions, _collisionsCache)
+			: collisions > 0
+				? _collisionsCache[0]
+				: Collision.None;
+	}
+
+	public inline function collides(sprite: Sprite): Bool {
+		return collidesDetailed(sprite) != Collision.None;
 	}
 	
 	function collidesupdown(x1: Int, x2: Int, y: Int, rect: Rectangle): Bool {
