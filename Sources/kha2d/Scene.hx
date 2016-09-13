@@ -4,7 +4,6 @@ import haxe.ds.ArraySort;
 import kha.Color;
 import kha.graphics2.Graphics;
 import kha.math.FastMatrix3;
-import kha.math.Matrix3;
 import kha.math.Vector2;
 
 class Scene {
