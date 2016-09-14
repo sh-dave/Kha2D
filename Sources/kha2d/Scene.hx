@@ -4,7 +4,6 @@ import haxe.ds.ArraySort;
 import kha.Color;
 import kha.graphics2.Graphics;
 import kha.math.FastMatrix3;
-import kha.math.Matrix3;
 import kha.math.Vector2;
 
 class Scene {
@@ -21,8 +20,8 @@ class Scene {
 	
 	public var cameraX(default, set): Int;
 	public var cameraY(default, set): Int;
-	public var screenOffsetX: Int;
-	public var screenOffsetY: Int;
+	public var screenOffsetX(default, default): Int;
+	public var screenOffsetY(default, default): Int;
 	
 	var dirtySprites: Bool = false;
 	
@@ -220,8 +219,6 @@ class Scene {
 		cleanSprites();
 	}
 
-	// TODO (DK) all transform stuff needs to be relative so it can be offset'ed as well
-	// TODO (DK) remove clear()?
 	public function render(g: Graphics) {
 		g.transformation = FastMatrix3.identity();
 		g.color = backgroundColor;
